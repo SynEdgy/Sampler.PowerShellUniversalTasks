@@ -1,0 +1,111 @@
+<#
+    Populate these two lists to choose, per class, how it should be exported as a type
+    accelerator:
+      - $TypesToExportAsIs: exported under its bare class name (for example 'MyClass').
+        Be careful of collisions - if another module also exports a class with the same
+        bare name, whichever module imports last wins.
+      - $TypesToExportWithNamespace: exported as '<ModuleName>.<ClassName>' (for example
+        'MyModule.MyClass'), to reduce the risk of collisions with type accelerators
+        exported by other modules.
+
+    Types are resolved by name (string) rather than by type literal (for example
+    [MyClass]) on purpose: a type literal is resolved against the type accelerator table
+    at parse time, so if an accelerator with that same name already exists (for example a
+    stale one left behind by a previous import of this same module), the literal would
+    silently resolve to the OLD type instead of the one just declared.
+#>
+
+# If classes/types are specified here, they won't be fully qualified (careful with conflicts).
+$TypesToExportAsIs = @(
+    # 'MyOtherClass'
+)
+
+# The type accelerators created will be '<ModuleName>.<ClassName>' (to avoid conflicts with other modules until they use 'using module <ModuleName>').
+$TypesToExportWithNamespace = @(
+    'Class1'
+)
+
+# Get the internal TypeAccelerators class to use its static methods.
+$TypeAcceleratorsClass = [psobject].Assembly.GetType(
+    'System.Management.Automation.TypeAccelerators'
+)
+
+$ModuleName = $MyInvocation.MyCommand.ScriptBlock.Module.Name
+
+$TypeAcceleratorExports = @(
+    foreach ($typeName in $TypesToExportAsIs)
+    {
+        $type = $typeName -as [System.Type]
+
+        if (-not $type)
+        {
+            $message = "Unable to register type accelerator '$typeName'. Type '$typeName' not found."
+
+            throw [System.Management.Automation.ErrorRecord]::new(
+                [System.InvalidOperationException]::new($message),
+                'TypeAcceleratorTypeNotFound',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $typeName
+            )
+        }
+
+        [PSCustomObject]@{
+            AcceleratorName = $typeName
+            Type            = $type
+        }
+    }
+
+    foreach ($typeName in $TypesToExportWithNamespace)
+    {
+        $acceleratorName = '{0}.{1}' -f $ModuleName, $typeName
+        $type = $typeName -as [System.Type]
+
+        if (-not $type)
+        {
+            $message = "Unable to register type accelerator '$acceleratorName' for '$typeName'. Type '$typeName' not found."
+
+            throw [System.Management.Automation.ErrorRecord]::new(
+                [System.InvalidOperationException]::new($message),
+                'TypeAcceleratorTypeNotFound',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $acceleratorName
+            )
+        }
+
+        [PSCustomObject]@{
+            AcceleratorName = $acceleratorName
+            Type            = $type
+        }
+    }
+)
+
+$ExistingTypeAccelerators = $TypeAcceleratorsClass::Get
+
+<#
+    PowerShell classes have no namespace, so the same bare (or module-qualified) name can
+    legitimately point to a different type identity across module reloads (for example,
+    re-importing this module with -Force during development creates a new type for the
+    "same" class). There is no reliable way to tell that apart from a genuine name
+    collision with an unrelated module, so we brute-force override: remove any existing
+    accelerator with the same name (if any) and register ours on top of it.
+#>
+foreach ($typeAcceleratorExport in $TypeAcceleratorExports)
+{
+    if ($typeAcceleratorExport.AcceleratorName -in $ExistingTypeAccelerators.Keys)
+    {
+        Write-Verbose -Message "Overriding existing type accelerator '$($typeAcceleratorExport.AcceleratorName)' with '$($typeAcceleratorExport.Type.FullName)'."
+
+        $null = $TypeAcceleratorsClass::Remove($typeAcceleratorExport.AcceleratorName)
+    }
+
+    $null = $TypeAcceleratorsClass::Add($typeAcceleratorExport.AcceleratorName, $typeAcceleratorExport.Type)
+}
+
+# Remove type accelerators when the module is removed.
+$MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
+    foreach ($typeAcceleratorExport in $TypeAcceleratorExports)
+    {
+        $null = $TypeAcceleratorsClass::Remove($typeAcceleratorExport.AcceleratorName)
+    }
+}.GetNewClosure()
+
