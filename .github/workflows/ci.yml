@@ -1,0 +1,197 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+    paths-ignore:
+      - CHANGELOG.md
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - CHANGELOG.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DEFAULT_BRANCH: main
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      module-version: ${{ steps.gitversion.outputs.module-version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate module version
+        id: gitversion
+        shell: pwsh
+        run: |
+          dotnet tool install --global GitVersion.Tool --version 5.*
+          $gitVersion = dotnet-gitversion /output json | ConvertFrom-Json
+          "ModuleVersion=$($gitVersion.NuGetVersionV2)" >> $env:GITHUB_ENV
+          "module-version=$($gitVersion.NuGetVersionV2)" >> $env:GITHUB_OUTPUT
+
+      - name: Build and package module
+        shell: pwsh
+        run: ./build.ps1 -ResolveDependency -Tasks pack
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: module-output
+          path: output
+          if-no-files-found: error
+          retention-days: 7
+
+  test:
+    name: Test - ${{ matrix.name }}
+    needs: build
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu
+            artifact: ubuntu-pwsh
+            os: ubuntu-latest
+            shell: pwsh
+          - name: Windows PowerShell
+            artifact: windows-pwsh
+            os: windows-latest
+            shell: pwsh
+          - name: Windows PowerShell 5.1
+            artifact: windows-powershell
+            os: windows-latest
+            shell: powershell
+          - name: macOS
+            artifact: macos-pwsh
+            os: macos-latest
+            shell: pwsh
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: module-output
+          path: output
+
+      - name: Run tests
+        shell: ${{ matrix.shell }}
+        run: ./build.ps1 -Tasks test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.artifact }}
+          path: output/testResults
+          if-no-files-found: warn
+          retention-days: 7
+
+  quality:
+    name: HQRM
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: module-output
+          path: output
+
+      - name: Run HQRM tests
+        shell: powershell
+        run: ./build.ps1 -Tasks hqrmtest
+
+      - name: Upload HQRM results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-hqrm
+          path: output/testResults
+          if-no-files-found: warn
+          retention-days: 7
+
+  publish:
+    name: Publish module
+    needs:
+      - build
+      - test
+      - quality
+    if: >-
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      ReleaseBranch: ${{ env.DEFAULT_BRANCH }}
+      MainGitBranch: ${{ env.DEFAULT_BRANCH }}
+      ModuleVersion: ${{ needs.build.outputs.module-version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: module-output
+          path: output
+
+      - name: Confirm PowerShell Gallery secret
+        shell: pwsh
+        env:
+          GalleryApiToken: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          if ([System.String]::IsNullOrWhiteSpace($env:GalleryApiToken))
+          {
+              throw "Repository secret 'PSGALLERY_API_KEY' is required for publishing."
+          }
+
+      - name: Publish release and module
+        shell: pwsh
+        env:
+          GitHubToken: ${{ github.token }}
+          GalleryApiToken: ${{ secrets.PSGALLERY_API_KEY }}
+        run: ./build.ps1 -Tasks publish
+
+      - name: Create post-release changelog pull request
+        shell: pwsh
+        env:
+          GitHubToken: ${{ github.token }}
+        run: ./build.ps1 -Tasks Create_ChangeLog_GitHub_PR

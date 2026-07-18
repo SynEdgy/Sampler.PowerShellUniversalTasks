@@ -82,8 +82,6 @@ BuildWorkflow:
 
   publish:
     - Publish_Release_To_GitHub # Runs first, if token is expired it will fail early
-    - Publish_GitHub_Wiki_Content
-
     - publish_module_to_gallery
 
 ####################################################
@@ -201,6 +199,13 @@ GitConfig:
   # UserName: dscbot
   # UserEmail: dsccommunity@outlook.com
   MainGitBranch: main
+
+GitHubConfig:
+  GitHubFilesToAdd:
+    - CHANGELOG.md
+  GitHubConfigUserName: github-actions[bot]
+  GitHubConfigUserEmail: 41898282+github-actions[bot]@users.noreply.github.com
+  UpdateChangelogOnPrerelease: false
 
 ####################################################
 #          Changelog Configuration                 #
