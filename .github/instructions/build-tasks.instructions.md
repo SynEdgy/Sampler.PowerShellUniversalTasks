@@ -21,7 +21,7 @@ applyTo: "{build.ps1,build.yaml,.build/*.ps1,.github/workflows/*.yml,.github/wor
 
 ## Custom task rules
 
-- See `build-task-files.instructions.md` for `.build/tasks/*.build.ps1` authoring rules (parameters, `Set-SamplerTaskVariable`, task definitions).
+- See `build-task-modules.instructions.md` for task files shipped by PowerShell modules that export Sampler/InvokeBuild tasks.
 - Keep PowerShell Universal publish logic aligned with the built package path and `BuildInfo.UniversalServer` settings rather than re-deriving that state elsewhere.
 
 ## Validation

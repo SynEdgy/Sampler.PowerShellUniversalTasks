@@ -1,9 +1,9 @@
 ---
-description: 'Shipped build task authoring instructions'
+description: 'Build task module authoring instructions'
 applyTo: 'source/Tasks/*.build.ps1'
 ---
 
-# Build Task Development Guidelines
+# Build Task Module Development Guidelines
 
 ## File layout
 
