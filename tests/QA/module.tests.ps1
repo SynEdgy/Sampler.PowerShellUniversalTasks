@@ -113,11 +113,11 @@ Describe 'Quality for module' -Tags 'TestQuality' {
         }
     }
 
-    It 'Should have a unit test for <Name>' -ForEach $testCases {
+    It 'Should have a unit test for <Name>' -ForEach $testCases -AllowNullOrEmptyForEach {
         Get-ChildItem -Path 'tests\' -Recurse -Include "$Name.Tests.ps1" | Should -Not -BeNullOrEmpty
     }
 
-    It 'Should pass Script Analyzer for <Name>' -ForEach $testCases -Skip:(-not $scriptAnalyzerRules) {
+    It 'Should pass Script Analyzer for <Name>' -ForEach $testCases -AllowNullOrEmptyForEach -Skip:(-not $scriptAnalyzerRules) {
         $functionFile = Get-ChildItem -Path $sourcePath -Recurse -Include "$Name.ps1"
 
         $pssaResult = (Invoke-ScriptAnalyzer -Path $functionFile.FullName)
@@ -128,7 +128,7 @@ Describe 'Quality for module' -Tags 'TestQuality' {
 }
 
 Describe 'Help for module' -Tags 'helpQuality' {
-    It 'Should have .SYNOPSIS for <Name>' -ForEach $testCases {
+    It 'Should have .SYNOPSIS for <Name>' -ForEach $testCases -AllowNullOrEmptyForEach {
         $functionFile = Get-ChildItem -Path $sourcePath -Recurse -Include "$Name.ps1"
 
         $scriptFileRawContent = Get-Content -Raw -Path $functionFile.FullName
@@ -147,7 +147,7 @@ Describe 'Help for module' -Tags 'helpQuality' {
         $functionHelp.Synopsis | Should -Not -BeNullOrEmpty
     }
 
-    It 'Should have a .DESCRIPTION with length greater than 40 characters for <Name>' -ForEach $testCases {
+    It 'Should have a .DESCRIPTION with length greater than 40 characters for <Name>' -ForEach $testCases -AllowNullOrEmptyForEach {
         $functionFile = Get-ChildItem -Path $sourcePath -Recurse -Include "$Name.ps1"
 
         $scriptFileRawContent = Get-Content -Raw -Path $functionFile.FullName
@@ -166,7 +166,7 @@ Describe 'Help for module' -Tags 'helpQuality' {
         $functionHelp.Description.Length | Should -BeGreaterThan 40
     }
 
-    It 'Should have at least one (1) example for <Name>' -ForEach $testCases {
+    It 'Should have at least one (1) example for <Name>' -ForEach $testCases -AllowNullOrEmptyForEach {
         $functionFile = Get-ChildItem -Path $sourcePath -Recurse -Include "$Name.ps1"
 
         $scriptFileRawContent = Get-Content -Raw -Path $functionFile.FullName
@@ -188,7 +188,7 @@ Describe 'Help for module' -Tags 'helpQuality' {
 
     }
 
-    It 'Should have described all parameters for <Name>' -ForEach $testCases {
+    It 'Should have described all parameters for <Name>' -ForEach $testCases -AllowNullOrEmptyForEach {
         $functionFile = Get-ChildItem -Path $sourcePath -Recurse -Include "$Name.ps1"
 
         $scriptFileRawContent = Get-Content -Raw -Path $functionFile.FullName
@@ -213,4 +213,3 @@ Describe 'Help for module' -Tags 'helpQuality' {
         }
     }
 }
-

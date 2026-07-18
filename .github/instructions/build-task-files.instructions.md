@@ -1,17 +1,18 @@
 ---
-description: 'Custom build task authoring instructions'
-applyTo: '{.build/tasks/*.build.ps1,.build/tasks/*.build.psm1}'
+description: 'Shipped build task authoring instructions'
+applyTo: 'source/Tasks/*.build.ps1'
 ---
 
 # Build Task Development Guidelines
 
 ## File layout
 
-- Keep custom build task files under `.build/tasks/`.
+- Keep shipped build task files under `source/Tasks/`.
 - Name task files `<Purpose>.<Subsystem>.build.ps1`.
-- Put helper functions used by a custom task in a sibling `.build.psm1` file next to the task file.
+- Put helper functions in one-function-per-file module files under `source/Public` or `source/Private`.
+- Do not create sibling task `.psm1` helper modules.
 - Keep the `.build.ps1` file focused on task parameters, task definitions, and task-scoped logging.
-- Keep helper modules free of task-scoped UI concerns such as `Write-Build`.
+- Keep `Write-Build` calls in task files.
 
 ## Parameter block
 
@@ -73,8 +74,8 @@ task Link_Local_Workspace_Dependencies {
 - Fail fast when a task requires built module output and that output is missing.
 - Keep source kind and artifact kind separate; do not infer artifact context by probing folders.
 
-## Helper modules
+## Task export
 
-- Export helper functions explicitly from the sibling `.build.psm1`.
-- Keep helper functions reusable and free of task orchestration logic.
-- Return state to the task file when the task needs to decide how to log or sequence work.
+- Add one `source/Public/Task.*.ps1` alias definition per shipped task file.
+- Point the alias at the task file under the built module's `Tasks` directory.
+- Add the alias name to `AliasesToExport` in `build.yaml`.

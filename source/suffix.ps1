@@ -22,7 +22,6 @@ $TypesToExportAsIs = @(
 
 # The type accelerators created will be '<ModuleName>.<ClassName>' (to avoid conflicts with other modules until they use 'using module <ModuleName>').
 $TypesToExportWithNamespace = @(
-    'Class1'
 )
 
 # Get the internal TypeAccelerators class to use its static methods.
@@ -108,4 +107,3 @@ $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
         $null = $TypeAcceleratorsClass::Remove($typeAcceleratorExport.AcceleratorName)
     }
 }.GetNewClosure()
-

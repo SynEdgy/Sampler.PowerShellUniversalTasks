@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- For new features.
+- Added reusable Sampler tasks for packaging and deploying PowerShell Universal modules.
+- Added task-file alias exports compatible with `ModuleBuildTasks` in Sampler repositories.
 
 ### Changed
 
-- For changes in existing functionality.
+- Converted the generated sample module into an InvokeBuild task module.
 
 ### Deprecated
 
@@ -19,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- For now removed features.
+- Removed generated sample functions, classes, and tests.
 
 ### Fixed
 
@@ -28,4 +29,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - In case of vulnerabilities.
-

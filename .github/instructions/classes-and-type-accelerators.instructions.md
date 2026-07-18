@@ -7,40 +7,31 @@ applyTo: '{source/suffix.ps1,source/Classes/*.ps1,source/Enum/*.ps1}'
 
 ## Purpose
 
-- This repository uses the `source\suffix.ps1` type-accelerator pattern to expose selected PowerShell classes after module import.
-- This is a deliberate workaround for PowerShell modules not being able to export classes directly.
+- Use `source/suffix.ps1` to expose selected PowerShell classes as type accelerators after module import.
+- Use this pattern when consumers need classes without a `using module` statement.
 
 ## Registration rules
 
-- Keep type-accelerator registration in `source\suffix.ps1`, after classes are available.
-- Naming: class properties use PascalCase. Top-level `suffix.ps1` variables holding persistent export-list state (`$TypesToExportAsIs`, `$TypesToExportWithNamespace`, the resolved module name, etc.) use PascalCase; transient loop/computation variables within `suffix.ps1` use camelCase.
-- Use `$TypesToExportAsIs` only for classes that should be referenced without a module prefix.
-- Prefer module-qualified accelerators via `$TypesToExportWithNamespace` to reduce name collisions.
-- Resolve the module name dynamically rather than hard-coding it.
-- Resolve each class by name (string, via `-as [System.Type]`) rather than by type literal (for example `[MyClass]`), since a type literal is bound against the type accelerator table at parse time and would silently resolve to a stale accelerator of the same name instead of the class just declared.
-- Validate that each type exists before registering its accelerator; throw if it cannot be found.
-- Brute-force override an existing accelerator of the same name (remove then re-add) rather than skipping or failing - PowerShell classes have no namespace, so a same-named accelerator left over from a previous `-Force` re-import cannot reliably be distinguished from a genuine collision with an unrelated module. Emit a `Write-Verbose` message when an override happens; do not throw or warn for this case.
+- Keep type-accelerator registration in `source/suffix.ps1`, after classes are available.
+- Use `$TypesToExportAsIs` only for classes that require a bare accelerator name.
+- Prefer module-qualified accelerators through `$TypesToExportWithNamespace`.
+- Resolve the module name dynamically.
+- Resolve classes by name with `-as [System.Type]`; do not use type literals.
+- Throw when a configured class cannot be resolved.
+- Remove and replace an existing accelerator with the same name during module reload.
+- Emit `Write-Verbose` when replacing an accelerator.
 
 ## Build wiring
 
-- `suffix.ps1` is only merged into the built root module script if `build.yaml` has `suffix: suffix.ps1` uncommented under the ModuleBuilder configuration section. Verify this setting whenever `suffix.ps1` is added, renamed, or removed.
+- Enable `suffix: suffix.ps1` in `build.yaml` when type accelerators are used.
+- Verify the suffix is merged into the built root module.
 
-## Cleanup rules
+## Cleanup
 
-- Remove namespaced accelerators in the module `OnRemove` handler.
-- Keep the cleanup logic aligned with the accelerators registered during import.
-
-## Usage implications
-
-- Module consumers must import the module before invoking code paths that depend on exported type accelerators.
-- Dependent modules should rely on manifest `RequiredModules` when they need these accelerators available before command invocation.
-- Keep this pattern compatible with Windows PowerShell 5.1 and PowerShell 7.
+- Remove registered accelerators from the module `OnRemove` handler.
+- Keep cleanup aligned with every registered accelerator.
 
 ## Change safety
 
-- When adding, removing, or renaming exported classes, update:
-  - `source\suffix.ps1`
-  - the relevant class files under `source\Classes\`
-  - any tests that instantiate or reference those classes
-- Preserve the current collision-avoidance behavior unless intentionally redesigning the class consumption model.
-
+- Update `source/suffix.ps1`, class files, and tests together when adding, renaming, or removing exported classes.
+- Keep the implementation compatible with Windows PowerShell 5.1 and PowerShell 7.

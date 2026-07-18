@@ -30,7 +30,7 @@ CompanyName = 'SynEdgy'
 Copyright = '(c) SynEdgy. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Set of tasks to build and deploy PowerShell Universal modules'
+Description = 'Sampler build tasks for packaging and deploying PowerShell Universal modules.'
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '5.0'
@@ -95,13 +95,13 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('Sampler', 'build', 'tasks', 'InvokeBuild', 'PowerShellUniversal')
 
         # A URL to the license for this module.
         # LicenseUri = ''
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/SynEdgy/Sampler.PowerShellUniversalTasks'
 
         # A URL to an icon representing this module.
         # IconUri = ''
@@ -129,9 +129,6 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
-
-
-
 
 
 
