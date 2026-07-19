@@ -18,9 +18,6 @@ on:
 permissions:
   contents: read
 
-env:
-  DEFAULT_BRANCH: main
-
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -98,8 +95,14 @@ jobs:
           name: module-output
           path: output
 
-      - name: Run tests
-        shell: ${{ matrix.shell }}
+      - name: Run tests with PowerShell 7
+        if: matrix.shell == 'pwsh'
+        shell: pwsh
+        run: ./build.ps1 -Tasks test
+
+      - name: Run tests with Windows PowerShell 5.1
+        if: matrix.shell == 'powershell'
+        shell: powershell
         run: ./build.ps1 -Tasks test
 
       - name: Upload test results
@@ -157,8 +160,6 @@ jobs:
       contents: write
       pull-requests: write
     env:
-      ReleaseBranch: ${{ env.DEFAULT_BRANCH }}
-      MainGitBranch: ${{ env.DEFAULT_BRANCH }}
       ModuleVersion: ${{ needs.build.outputs.module-version }}
 
     steps:
@@ -173,25 +174,16 @@ jobs:
           name: module-output
           path: output
 
-      - name: Confirm PowerShell Gallery secret
+      - name: Publish release module and changelog pull request
         shell: pwsh
         env:
-          GalleryApiToken: ${{ secrets.PSGALLERY_API_KEY }}
+          GitHubToken: ${{ secrets.GitHubToken }}
+          GalleryApiToken: ${{ secrets.GalleryApiToken }}
         run: |
-          if ([System.String]::IsNullOrWhiteSpace($env:GalleryApiToken))
+          ./build.ps1 -Tasks publish
+          if ($LASTEXITCODE -ne 0)
           {
-              throw "Repository secret 'PSGALLERY_API_KEY' is required for publishing."
+              exit $LASTEXITCODE
           }
 
-      - name: Publish release and module
-        shell: pwsh
-        env:
-          GitHubToken: ${{ github.token }}
-          GalleryApiToken: ${{ secrets.PSGALLERY_API_KEY }}
-        run: ./build.ps1 -Tasks publish
-
-      - name: Create post-release changelog pull request
-        shell: pwsh
-        env:
-          GitHubToken: ${{ github.token }}
-        run: ./build.ps1 -Tasks Create_ChangeLog_GitHub_PR
+          ./build.ps1 -Tasks Create_ChangeLog_GitHub_PR
