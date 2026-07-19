@@ -22,3 +22,8 @@ The module provides tasks to:
 Configure the server under `UniversalServer` in `build.yaml`. Supply
 `UniversalServerAppToken` through the build environment or a local secrets file;
 do not commit tokens.
+
+## Documentation
+
+See the [GitHub wiki](https://github.com/SynEdgy/Sampler.PowerShellUniversalTasks/wiki)
+for installation, configuration, and task reference documentation.

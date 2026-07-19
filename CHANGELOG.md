@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added reusable Sampler tasks for packaging and deploying PowerShell Universal modules.
 - Added task-file alias exports compatible with `ModuleBuildTasks` in Sampler repositories.
+- Added WikiSource documentation and DscResource.DocGenerator build and publish workflows.
 
 ### Changed
 
