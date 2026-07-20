@@ -32,7 +32,7 @@ Describe 'New-UniversalAutomationRepositoryPackage' {
         }
         Mock -CommandName Remove-Item
         Mock -CommandName New-Item
-        Mock -CommandName Copy-UniversalAutomationRepositoryModule
+        Mock -CommandName Copy-UniversalRepositoryModule
         Mock -CommandName New-UniversalAutomationRepositoryManifest
         Mock -CommandName Compress-Archive
         Mock -CommandName Get-Item -MockWith {
@@ -51,7 +51,7 @@ Describe 'New-UniversalAutomationRepositoryPackage' {
         $result = Sampler.PowerShellUniversalTasks\New-UniversalAutomationRepositoryPackage @packageParameters
 
         $result.Name | Should -Be 'MyModule.1.2.3.zip'
-        Should -Invoke -CommandName Copy-UniversalAutomationRepositoryModule -Exactly -Times 1 -Scope It
+        Should -Invoke -CommandName Copy-UniversalRepositoryModule -Exactly -Times 1 -Scope It
         Should -Invoke -CommandName New-UniversalAutomationRepositoryManifest -Exactly -Times 1 -Scope It
         Should -Invoke -CommandName Compress-Archive -Exactly -Times 1 -Scope It
     }

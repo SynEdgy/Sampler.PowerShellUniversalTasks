@@ -33,11 +33,35 @@ Describe 'Sampler.PowerShellUniversalTasks task exports' {
         $alias.ResolvedCommand.Path | Should -Match 'Tasks[\\/]Publish\.PowerShellUniversal\.build\.ps1$'
     }
 
+    It 'Should not export the task alias name as a function' {
+        $module = Get-Module -Name $script:moduleName
+
+        $module.ExportedFunctions.ContainsKey('Task.Publish_PowerShellUniversal') | Should -BeFalse
+    }
+
     It 'Should ship the task file in the Tasks directory' {
         $module = Get-Module -Name $script:moduleName
         $taskPath = Join-Path -Path $module.ModuleBase -ChildPath 'Tasks'
         $taskFilePath = Join-Path -Path $taskPath -ChildPath 'Publish.PowerShellUniversal.build.ps1'
 
         $taskFilePath | Should -Exist
+    }
+
+    It 'Should define the pull-module deployment meta task' {
+        $module = Get-Module -Name $script:moduleName
+        $taskPath = Join-Path -Path $module.ModuleBase -ChildPath 'Tasks'
+        $taskFilePath = Join-Path -Path $taskPath -ChildPath 'Publish.PowerShellUniversal.build.ps1'
+        $taskContent = Get-Content -Path $taskFilePath -Raw
+
+        $taskContent | Should -Match 'task publish_psu_pull_module_from_psresourcerepo publish_module_from_psresource_repos_to_universal_server, assert_universal_deployment_succeeded'
+    }
+
+    It 'Should define the push-repository deployment meta task' {
+        $module = Get-Module -Name $script:moduleName
+        $taskPath = Join-Path -Path $module.ModuleBase -ChildPath 'Tasks'
+        $taskFilePath = Join-Path -Path $taskPath -ChildPath 'Publish.PowerShellUniversal.build.ps1'
+        $taskContent = Get-Content -Path $taskFilePath -Raw
+
+        $taskContent | Should -Match 'task publish_psu_push_repository package_universal_automation_repository, publish_universal_automation_repository_to_server, assert_universal_deployment_succeeded'
     }
 }

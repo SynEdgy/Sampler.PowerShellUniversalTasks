@@ -71,33 +71,28 @@ Package and deploy the module directly:
 
 ```yaml
 BuildWorkflow:
-  pack:
-    - build
-    - package_module_nupkg
-
   deploy:
     - pack
-    - publish_packed_module_to_universal_server
+    - publish_psu_pull_module_from_psresourcerepo
 ```
 
 Package and deploy a complete offline automation repository:
 
 ```yaml
 BuildWorkflow:
-  pack:
-    - build
-    - package_module_nupkg
-    - package_universal_automation_repository
-
   deploy_repository:
-    - pack
-    - publish_universal_automation_repository_to_server
+    - build
+    - publish_psu_push_repository
 ```
+
+The compound tasks intentionally contain only tasks exported by this module.
+Keep consumer-specific workflows such as `build` and `pack` in the consumer
+`build.yaml` so the task module remains reusable across repositories.
 
 Run workflows through the Sampler entry point:
 
 ```powershell
-./build.ps1 -Tasks pack
+./build.ps1 -Tasks deploy
 ./build.ps1 -Tasks deploy_repository
 ```
 
