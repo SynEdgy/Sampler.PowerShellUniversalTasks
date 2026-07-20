@@ -16,6 +16,9 @@ UniversalServer:
   UniversalRepositoryZipName:
   UniversalRepositoryAsModule: false
   UniversalUnpinned: true
+  UniversalDeploymentNotificationDelaySeconds: 2
+  UniversalDeploymentNotificationLookbackSeconds: 120
+  UniversalDeploymentNotificationFilter:
 ```
 
 | Setting | Default | Description |
@@ -29,6 +32,9 @@ UniversalServer:
 | `UniversalRepositoryZipName` | `<ProjectName>.<ModuleVersion>.zip` | Optional explicit offline repository package name. |
 | `UniversalRepositoryAsModule` | `false` | Value sent to the deployment endpoint's `asModule` query parameter. |
 | `UniversalUnpinned` | `true` | Value sent to the deployment endpoint's `unpinned` query parameter. |
+| `UniversalDeploymentNotificationDelaySeconds` | `2` | Seconds to wait before querying notifications after deployment. Valid range: 0-300. |
+| `UniversalDeploymentNotificationLookbackSeconds` | `120` | Fallback lookback window when no deployment start time was recorded in the current workflow. Valid range: 1-3600. |
+| `UniversalDeploymentNotificationFilter` | Empty | Optional text that must appear in a deployment error title or description. |
 
 ## Authentication
 
@@ -75,9 +81,51 @@ PsuRepository/
         `-- 2.0.0/
 ```
 
-The zip contains the project module and recursively resolved `RequiredModules`
-dependencies. `repository.psd1` identifies the project module that PowerShell
-Universal should load from the `Modules` directory.
+The zip contains the project module and transitively resolved `RequiredModules`
+dependencies. Dependencies are processed through an iterative queue, matching
+Sampler's packaging approach and avoiding nested recursive calls. The first
+discovery order is retained; when the same module is required again, its
+selection changes only if the newly resolved version is higher.
+`repository.psd1` identifies the project module that PowerShell Universal
+should load from the `Modules` directory.
 
 Keep `UniversalRepositoryAsModule` set to `false` for this full repository
 layout.
+
+## Post-deployment validation
+
+Add `assert_universal_deployment_succeeded` immediately after a deployment
+task. The deployment tasks record their UTC start time, and the assertion task
+queries:
+
+```text
+GET /api/v1/notification/last
+```
+
+The workflow fails when a newer deployment, module, or configuration
+notification:
+
+- has level `Error`;
+- contains `failed` or `error`; or
+- contains `Invalid configuration`.
+
+If the assertion task runs without a deployment task in the same InvokeBuild
+workflow, it uses `UniversalDeploymentNotificationLookbackSeconds`.
+
+Use `UniversalDeploymentNotificationFilter` when multiple deployments can run
+against the same PSU instance concurrently and notifications contain a stable
+module or project identifier.
+
+For example, restrict deployment errors to notifications containing the module
+name:
+
+```yaml
+UniversalServer:
+  UniversalDeploymentNotificationFilter: MyModule
+```
+
+The filter is case-insensitive and applies to the combined notification title
+and description. Leave it empty to consider every recent deployment error.
+Only set a filter when PSU includes that value in relevant error notifications;
+a filter intentionally excludes generic deployment errors that do not contain
+the configured text.

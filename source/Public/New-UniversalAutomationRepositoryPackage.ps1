@@ -77,7 +77,7 @@ function New-UniversalAutomationRepositoryPackage
         }
 
         $null = New-Item -Path $modulesDestination -ItemType Directory -Force
-        Copy-UniversalAutomationRepositoryModule -Module $module -ModulesDestinationPath $modulesDestination -Visited @{ }
+        Copy-UniversalRepositoryModule -Module $module -ModulesDestinationPath $modulesDestination -Visited @{ }
 
         $repositoryManifestPath = Join-Path -Path $stagingDirectory -ChildPath 'repository.psd1'
         New-UniversalAutomationRepositoryManifest -Path $repositoryManifestPath -Module $module -ModuleVersion $ModuleVersion -Confirm:$false

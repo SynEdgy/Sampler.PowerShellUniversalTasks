@@ -50,11 +50,23 @@ task My_Task {
 }
 ```
 
+```powershell
+# Preferred: compose tasks shipped by this module.
+task Deploy_And_Validate Deploy_Module, Assert_Deployment
+
+# Avoid: consumer workflows and unrelated external tasks are not portable.
+task Deploy_And_Validate build, package_module_nupkg, Deploy_Module, Assert_Deployment
+```
+
 ## Task definitions
 
 - Prefix each task body with a `# Synopsis:` comment.
 - Use compound tasks without a body when a task only sequences other tasks.
 - Treat compound tasks as the stable public surface for local workflows.
+- Keep compound and meta-task dependencies within tasks shipped by this module.
+- Do not depend on consumer `build.yaml` workflow names such as `build`, `test`, `pack`, or `publish`.
+- Do not depend on tasks from other task modules unless they are deliberate, stable Sampler atomic tasks or meta-task APIs.
+- Prefer leaving external build/package prerequisites to the consumer workflow instead of coupling this module to them.
 - Use `Write-Build -Color <Color> -Text <message>` for task output.
 - Use `Green` for success, `Yellow` for warnings, and `DarkGray` for verbose detail.
 - Keep `Write-Build` calls in the task file, not in helper modules.
@@ -76,6 +88,8 @@ task Link_Local_Workspace_Dependencies {
 
 ## Task export
 
-- Add one `source/Public/Task.*.ps1` alias definition per shipped task file.
+- Add task-file alias definitions to `source/prefix.ps1`.
 - Point the alias at the task file under the built module's `Tasks` directory.
 - Add the alias name to `AliasesToExport` in `build.yaml`.
+- Keep `prefix: prefix.ps1` enabled.
+- Do not use alias-only files under `source/Public`.

@@ -17,6 +17,7 @@ Public functions are user-facing and are the most critical API surface of Sample
 - Use `[CmdletBinding()]` and include `[OutputType(...)]`.
 - Use explicit .NET parameter types (`[System.String]`, `[System.Boolean]`, etc.).
 - Keep parameter names and defaults stable unless intentionally introducing a breaking change.
+- Do not use `Automation` in new function names. Prefer specific terms such as `Universal`, `Repository`, `Deployment`, `Module`, or `Job`.
 - Follow DSC Community parameter style: `[Parameter()]` attribute, type, and variable name each on their own line, with a blank line between comma-separated parameter declarations:
 
 ```powershell
@@ -101,4 +102,3 @@ $p = Join-Path -Path $p    -ChildPath "$ModuleName.psd1"
 - When commands support both non-interactive and prompted flows, cover both modes.
 - Call the function under test with its module-qualified name (`Sampler.PowerShellUniversalTasks\Get-Foo`) to avoid accidentally calling a mock or a stale imported version.
 - Follow repository test conventions from `.github/instructions/test-writing.instructions.md`.
-

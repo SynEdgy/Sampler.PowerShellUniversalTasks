@@ -17,6 +17,7 @@ Private functions follow the same baseline engineering rules as public functions
 - Use `[CmdletBinding()]` and include `[OutputType(...)]`.
 - Use explicit .NET parameter types (`[System.String]`, `[System.Boolean]`, etc.).
 - Keep parameter names and defaults stable when consumed by public functions/tasks.
+- Do not use `Automation` in new function names. Prefer specific terms such as `Universal`, `Repository`, `Deployment`, `Module`, or `Job`.
 - Follow DSC Community parameter style: `[Parameter()]` attribute, type, and variable name each on their own line, with a blank line between comma-separated parameter declarations:
 
 ```powershell
@@ -61,4 +62,3 @@ param
 - Validate both happy path and input validation failures.
 - Call private functions via `InModuleScope` when testing them directly.
 - Follow repository test conventions from `.github/instructions/test-writing.instructions.md`.
-

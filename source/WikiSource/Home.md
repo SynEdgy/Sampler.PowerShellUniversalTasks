@@ -22,6 +22,9 @@ for packaging and deploying PowerShell modules to PowerShell Universal.
 | `publish_module_from_psresource_repos_to_universal_server` | Register or reconcile a PowerShell resource repository and install the module from it. |
 | `package_universal_automation_repository` | Package the built module and its dependencies as an offline automation repository. |
 | `publish_universal_automation_repository_to_server` | Upload and activate an offline automation repository package. |
+| `assert_universal_deployment_succeeded` | Query PSU notifications and fail the workflow when a deployment error is reported. |
+| `publish_psu_pull_module_from_psresourcerepo` | Build, package, install from a PSU resource repository, and validate deployment. |
+| `publish_psu_push_repository` | Build, package, push an offline PSU repository, and validate deployment. |
 
 ## Task discovery
 

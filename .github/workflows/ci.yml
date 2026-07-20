@@ -6,6 +6,7 @@ on:
       - main
     tags:
       - 'v*'
+      - '!v*-*'
     paths-ignore:
       - CHANGELOG.md
   pull_request:
@@ -40,10 +41,19 @@ jobs:
         id: gitversion
         shell: pwsh
         run: |
-          dotnet tool install --global GitVersion.Tool --version 5.*
-          $gitVersion = dotnet-gitversion /output json | ConvertFrom-Json
-          "ModuleVersion=$($gitVersion.NuGetVersionV2)" >> $env:GITHUB_ENV
-          "module-version=$($gitVersion.NuGetVersionV2)" >> $env:GITHUB_OUTPUT
+          if ($env:GITHUB_REF_TYPE -eq 'tag')
+          {
+              $moduleVersion = $env:GITHUB_REF_NAME -replace '^v', ''
+          }
+          else
+          {
+              dotnet tool install --global GitVersion.Tool --version 5.*
+              $gitVersion = dotnet-gitversion /output json | ConvertFrom-Json
+              $moduleVersion = $gitVersion.NuGetVersionV2
+          }
+
+          "ModuleVersion=$moduleVersion" >> $env:GITHUB_ENV
+          "module-version=$moduleVersion" >> $env:GITHUB_OUTPUT
 
       - name: Build and package module
         shell: pwsh

@@ -20,7 +20,7 @@ Encoding: UTF8
 #SemVer: '99.0.0-preview1'
 
 # suffix: suffix.ps1
-# prefix: prefix.ps1
+prefix: prefix.ps1
 VersionedOutputDirectory: true
 
 AliasesToExport:

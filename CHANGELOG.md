@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added reusable Sampler tasks for packaging and deploying PowerShell Universal modules.
 - Added task-file alias exports compatible with `ModuleBuildTasks` in Sampler repositories.
 - Added WikiSource documentation and DscResource.DocGenerator build and publish workflows.
+- Added post-deployment notification validation that fails the build when PowerShell Universal reports a deployment error.
+- Added module-scoped compound tasks for pulling a packaged module from a PSU resource repository or packaging and pushing a complete offline repository, including post-deployment validation.
 
 ### Changed
 
