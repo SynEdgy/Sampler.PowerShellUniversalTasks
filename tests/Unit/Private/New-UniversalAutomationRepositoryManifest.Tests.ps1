@@ -34,10 +34,22 @@ Describe 'New-UniversalAutomationRepositoryManifest' {
             $module = New-Module -Name 'MyModule' -ScriptBlock { }
 
             New-UniversalAutomationRepositoryManifest -Path $ManifestPath -Module $module -ModuleVersion '1.2.3-preview1' -Confirm:$false
-        } -Parameters @{ ManifestPath = (Join-Path -Path $TestDrive -ChildPath 'repository.psd1') }
+        } -Parameters @{ ManifestPath = (Join-Path -Path $TestDrive -ChildPath 'MyModule.psd1') }
 
         Should -Invoke -CommandName New-ModuleManifest -Exactly -Times 1 -Scope It -ParameterFilter {
-            $RootModule -eq 'MyModule' -and $ModuleVersion -eq '1.2.3'
+            $RootModule -eq 'MyModule' -and $ModuleVersion -eq '1.2.3' -and $Prerelease -eq 'preview1'
+        }
+    }
+
+    It 'Should create the repository descriptor without a prerelease tag when the version has none' {
+        InModuleScope -ScriptBlock {
+            $module = New-Module -Name 'MyModule' -ScriptBlock { }
+
+            New-UniversalAutomationRepositoryManifest -Path $ManifestPath -Module $module -ModuleVersion '1.2.3' -Confirm:$false
+        } -Parameters @{ ManifestPath = (Join-Path -Path $TestDrive -ChildPath 'MyModule.psd1') }
+
+        Should -Invoke -CommandName New-ModuleManifest -Exactly -Times 1 -Scope It -ParameterFilter {
+            $RootModule -eq 'MyModule' -and $ModuleVersion -eq '1.2.3' -and -not $Prerelease
         }
     }
 }

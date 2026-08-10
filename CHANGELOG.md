@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Converted the generated sample module into an InvokeBuild task module.
+- Changed the offline automation repository manifest file name from a fixed `repository.psd1` to `<ModuleName>.psd1`, and preserved the prerelease tag on the module version, so PowerShell Universal shows the correct module name and full version during deployment.
 
 ### Deprecated
 

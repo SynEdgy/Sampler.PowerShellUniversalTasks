@@ -6,7 +6,8 @@ function New-UniversalAutomationRepositoryPackage
 
         .DESCRIPTION
             Stages the built module and its required modules using the PowerShell
-            Universal repository layout, creates repository.psd1, and compresses it.
+            Universal repository layout, creates a <ModuleName>.psd1 repository
+            manifest, and compresses it.
 
         .PARAMETER BuiltModuleManifest
             Path to the manifest of the built project module.
@@ -79,7 +80,7 @@ function New-UniversalAutomationRepositoryPackage
         $null = New-Item -Path $modulesDestination -ItemType Directory -Force
         Copy-UniversalRepositoryModule -Module $module -ModulesDestinationPath $modulesDestination -Visited @{ }
 
-        $repositoryManifestPath = Join-Path -Path $stagingDirectory -ChildPath 'repository.psd1'
+        $repositoryManifestPath = Join-Path -Path $stagingDirectory -ChildPath ('{0}.psd1' -f $module.Name)
         New-UniversalAutomationRepositoryManifest -Path $repositoryManifestPath -Module $module -ModuleVersion $ModuleVersion -Confirm:$false
 
         if (Test-Path -Path $zipPath)
