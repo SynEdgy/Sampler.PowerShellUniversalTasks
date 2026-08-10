@@ -59,4 +59,31 @@ Describe 'Invoke-UniversalDeploymentUpload' {
             Sampler.PowerShellUniversalTasks\Invoke-UniversalDeploymentUpload @uploadParameters
         } | Should -Throw
     }
+
+    It 'Should not bypass certificate validation by default' {
+        $uploadParameters = @{
+            Uri      = 'https://psu.example.test/api/v1/deployment'
+            AppToken = 'token'
+            Path     = (Join-Path -Path $TestDrive -ChildPath 'package.zip')
+        }
+        $null = Sampler.PowerShellUniversalTasks\Invoke-UniversalDeploymentUpload @uploadParameters
+
+        Should -Invoke -CommandName Invoke-RestMethod -Exactly -Times 1 -Scope It -ParameterFilter {
+            -not $PSBoundParameters.ContainsKey('SkipCertificateCheck')
+        }
+    }
+
+    It 'Should pass -SkipCertificateCheck to Invoke-RestMethod when requested' -Skip:($PSVersionTable.PSVersion.Major -lt 6) {
+        $uploadParameters = @{
+            Uri                   = 'https://psu.example.test/api/v1/deployment'
+            AppToken              = 'token'
+            Path                  = (Join-Path -Path $TestDrive -ChildPath 'package.zip')
+            SkipCertificateCheck  = $true
+        }
+        $null = Sampler.PowerShellUniversalTasks\Invoke-UniversalDeploymentUpload @uploadParameters
+
+        Should -Invoke -CommandName Invoke-RestMethod -Exactly -Times 1 -Scope It -ParameterFilter {
+            $SkipCertificateCheck -eq $true
+        }
+    }
 }

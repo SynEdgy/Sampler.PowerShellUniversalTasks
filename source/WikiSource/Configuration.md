@@ -16,6 +16,7 @@ UniversalServer:
   UniversalRepositoryZipName:
   UniversalRepositoryAsModule: false
   UniversalUnpinned: true
+  UniversalSkipCertificateCheck: false
   UniversalDeploymentNotificationDelaySeconds: 2
   UniversalDeploymentNotificationLookbackSeconds: 120
   UniversalDeploymentNotificationFilter:
@@ -32,6 +33,7 @@ UniversalServer:
 | `UniversalRepositoryZipName` | `<ProjectName>.<ModuleVersion>.zip` | Optional explicit offline repository package name. |
 | `UniversalRepositoryAsModule` | `false` | Value sent to the deployment endpoint's `asModule` query parameter. |
 | `UniversalUnpinned` | `true` | Value sent to the deployment endpoint's `unpinned` query parameter. |
+| `UniversalSkipCertificateCheck` | `false` | Bypass TLS certificate validation for requests to the PowerShell Universal server. Useful for self-signed certificates. On PowerShell 6 and above this uses the native `Invoke-RestMethod -SkipCertificateCheck` parameter; on Windows PowerShell it temporarily disables `ServicePointManager` certificate validation for the request. |
 | `UniversalDeploymentNotificationDelaySeconds` | `2` | Seconds to wait before querying notifications after deployment. Valid range: 0-300. |
 | `UniversalDeploymentNotificationLookbackSeconds` | `120` | Fallback lookback window when no deployment start time was recorded in the current workflow. Valid range: 1-3600. |
 | `UniversalDeploymentNotificationFilter` | Empty | Optional text that must appear in a deployment error title or description. |

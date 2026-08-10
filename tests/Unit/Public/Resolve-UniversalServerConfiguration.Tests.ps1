@@ -34,6 +34,7 @@ Describe 'Resolve-UniversalServerConfiguration' {
                 UniversalPSResourceRepositoryUrl        = 'https://packages.example.test'
                 UniversalPSResourceRepositoryAutoRemove = $false
                 UniversalUnpinned                       = $false
+                UniversalSkipCertificateCheck           = $true
             }
         }
 
@@ -45,6 +46,37 @@ Describe 'Resolve-UniversalServerConfiguration' {
         $configuration.RepositoryUrl | Should -Be 'https://packages.example.test'
         $configuration.RepositoryAutoRemove | Should -BeFalse
         $configuration.Unpinned | Should -BeFalse
+        $configuration.SkipCertificateCheck | Should -BeTrue
+    }
+
+    It 'Should default SkipCertificateCheck to $false' {
+        $configurationParameters = @{
+            ServerUrl         = 'https://psu.example.test'
+            AppToken          = 'token'
+            RequireRepository = $true
+        }
+        $configuration = Sampler.PowerShellUniversalTasks\Resolve-UniversalServerConfiguration @configurationParameters
+
+        $configuration.SkipCertificateCheck | Should -BeFalse
+    }
+
+    It 'Should prefer the explicit SkipCertificateCheck parameter over the build configuration when bound' {
+        $buildInfo = @{
+            UniversalServer = @{
+                UniversalSkipCertificateCheck = $true
+            }
+        }
+        $configurationParameters = @{
+            BuildInfo                    = $buildInfo
+            ServerUrl                    = 'https://psu.example.test'
+            AppToken                     = 'token'
+            RequireRepository            = $true
+            SkipCertificateCheck         = $false
+            SkipCertificateCheckWasBound = $true
+        }
+        $configuration = Sampler.PowerShellUniversalTasks\Resolve-UniversalServerConfiguration @configurationParameters
+
+        $configuration.SkipCertificateCheck | Should -BeFalse
     }
 
     It 'Should use the default repository when no repository is configured' {

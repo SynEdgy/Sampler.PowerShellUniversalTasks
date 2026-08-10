@@ -117,4 +117,22 @@ Describe 'Get-UniversalDeploymentError' {
         $result.Count | Should -Be 1
         $result[0].Description | Should -Match 'MyModule'
     }
+
+    It 'Should pass -SkipCertificateCheck to Invoke-RestMethod when requested' -Skip:($PSVersionTable.PSVersion.Major -lt 6) {
+        Mock -CommandName Invoke-RestMethod -MockWith {
+            [PSCustomObject]@{ page = @() }
+        }
+
+        $parameters = @{
+            ServerUrl             = 'https://psu.example.test'
+            AppToken              = 'token'
+            Since                 = [System.DateTimeOffset]::UtcNow.AddMinutes(-1)
+            SkipCertificateCheck  = $true
+        }
+        $null = @(Sampler.PowerShellUniversalTasks\Get-UniversalDeploymentError @parameters)
+
+        Should -Invoke -CommandName Invoke-RestMethod -Exactly -Times 1 -Scope It -ParameterFilter {
+            $SkipCertificateCheck -eq $true
+        }
+    }
 }
