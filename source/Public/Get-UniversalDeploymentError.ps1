@@ -20,6 +20,9 @@ function Get-UniversalDeploymentError
         .PARAMETER FilterText
             Optional text that must appear in the notification title or description.
 
+        .PARAMETER SkipCertificateCheck
+            Whether to bypass TLS certificate validation for the request.
+
         .EXAMPLE
             Get-UniversalDeploymentError -ServerUrl $url -AppToken $token -Since $startedAt
     #>
@@ -41,7 +44,11 @@ function Get-UniversalDeploymentError
 
         [Parameter()]
         [System.String]
-        $FilterText
+        $FilterText,
+
+        [Parameter()]
+        [System.Boolean]
+        $SkipCertificateCheck = $false
     )
 
     $requestParameters = @{
@@ -51,7 +58,7 @@ function Get-UniversalDeploymentError
         }
         Method  = 'Get'
     }
-    $response = Invoke-RestMethod @requestParameters
+    $response = Invoke-UniversalRestMethod -RestMethodParameters $requestParameters -SkipCertificateCheck $SkipCertificateCheck
     $notifications = if ($null -ne $response.page)
     {
         @($response.page)

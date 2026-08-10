@@ -41,6 +41,10 @@ param
     $UniversalUnpinned = (property UniversalUnpinned $true),
 
     [Parameter()]
+    [System.Boolean]
+    $UniversalSkipCertificateCheck = (property UniversalSkipCertificateCheck $false),
+
+    [Parameter()]
     [ValidateRange(0, 300)]
     [System.Int32]
     $UniversalDeploymentNotificationDelaySeconds = (property UniversalDeploymentNotificationDelaySeconds 2),
@@ -81,6 +85,8 @@ task publish_packed_module_to_universal_server {
         Unpinned                     = $UniversalUnpinned
         RepositoryAutoRemoveWasBound = 'UniversalPSResourceRepositoryAutoRemove' -in $TaskParameterNames
         UnpinnedWasBound             = 'UniversalUnpinned' -in $TaskParameterNames
+        SkipCertificateCheck         = $UniversalSkipCertificateCheck
+        SkipCertificateCheckWasBound = 'UniversalSkipCertificateCheck' -in $TaskParameterNames
     }
     $configuration = Sampler.PowerShellUniversalTasks\Resolve-UniversalServerConfiguration @configurationParameters
     $packagePath = Join-Path -Path $OutputDirectory -ChildPath ('{0}.{1}.nupkg' -f $ProjectName, $ModuleVersion)
@@ -91,7 +97,7 @@ task publish_packed_module_to_universal_server {
     )
 
     $script:UniversalDeploymentStartedAt = [System.DateTimeOffset]::UtcNow
-    $null = Sampler.PowerShellUniversalTasks\Invoke-UniversalDeploymentUpload -Uri $endpoint -AppToken $configuration.AppToken -Path $packagePath
+    $null = Sampler.PowerShellUniversalTasks\Invoke-UniversalDeploymentUpload -Uri $endpoint -AppToken $configuration.AppToken -Path $packagePath -SkipCertificateCheck $configuration.SkipCertificateCheck
     Write-Build -Color Green -Text ("Published module '{0}' version '{1}' to PowerShell Universal." -f $ProjectName, $ModuleVersion)
 }
 
@@ -115,6 +121,8 @@ task publish_module_from_psresource_repos_to_universal_server {
         Unpinned                     = $UniversalUnpinned
         RepositoryAutoRemoveWasBound = 'UniversalPSResourceRepositoryAutoRemove' -in $TaskParameterNames
         UnpinnedWasBound             = 'UniversalUnpinned' -in $TaskParameterNames
+        SkipCertificateCheck         = $UniversalSkipCertificateCheck
+        SkipCertificateCheckWasBound = 'UniversalSkipCertificateCheck' -in $TaskParameterNames
         RequireRepository            = $true
     }
     $configuration = Sampler.PowerShellUniversalTasks\Resolve-UniversalServerConfiguration @configurationParameters
@@ -133,6 +141,7 @@ task publish_module_from_psresource_repos_to_universal_server {
         RepositoryName        = $configuration.RepositoryName
         RepositoryUrl         = $repositoryUrl
         RepositoryAutoRemove  = $configuration.RepositoryAutoRemove
+        SkipCertificateCheck  = $configuration.SkipCertificateCheck
     }
 
     $script:UniversalDeploymentStartedAt = [System.DateTimeOffset]::UtcNow
@@ -182,6 +191,8 @@ task publish_universal_automation_repository_to_server {
         Unpinned                     = $UniversalUnpinned
         RepositoryAutoRemoveWasBound = 'UniversalPSResourceRepositoryAutoRemove' -in $TaskParameterNames
         UnpinnedWasBound             = 'UniversalUnpinned' -in $TaskParameterNames
+        SkipCertificateCheck         = $UniversalSkipCertificateCheck
+        SkipCertificateCheckWasBound = 'UniversalSkipCertificateCheck' -in $TaskParameterNames
     }
     $configuration = Sampler.PowerShellUniversalTasks\Resolve-UniversalServerConfiguration @configurationParameters
     $zipName = if ([System.String]::IsNullOrWhiteSpace($UniversalRepositoryZipName))
@@ -200,7 +211,7 @@ task publish_universal_automation_repository_to_server {
     )
 
     $script:UniversalDeploymentStartedAt = [System.DateTimeOffset]::UtcNow
-    $deployment = Sampler.PowerShellUniversalTasks\Invoke-UniversalDeploymentUpload -Uri $endpoint -AppToken $configuration.AppToken -Path $packagePath
+    $deployment = Sampler.PowerShellUniversalTasks\Invoke-UniversalDeploymentUpload -Uri $endpoint -AppToken $configuration.AppToken -Path $packagePath -SkipCertificateCheck $configuration.SkipCertificateCheck
     Write-Build -Color Green -Text ("Deployed automation repository '{0}' version '{1}'." -f $deployment.name, $deployment.version)
 }
 
@@ -224,6 +235,8 @@ task assert_universal_deployment_succeeded {
         Unpinned                     = $UniversalUnpinned
         RepositoryAutoRemoveWasBound = 'UniversalPSResourceRepositoryAutoRemove' -in $TaskParameterNames
         UnpinnedWasBound             = 'UniversalUnpinned' -in $TaskParameterNames
+        SkipCertificateCheck         = $UniversalSkipCertificateCheck
+        SkipCertificateCheckWasBound = 'UniversalSkipCertificateCheck' -in $TaskParameterNames
     }
     $configuration = Sampler.PowerShellUniversalTasks\Resolve-UniversalServerConfiguration @configurationParameters
 
@@ -277,10 +290,11 @@ task assert_universal_deployment_succeeded {
 
     $notificationFilter = $UniversalDeploymentNotificationFilter
     $errorParameters = @{
-        ServerUrl  = $configuration.ServerUrl
-        AppToken   = $configuration.AppToken
-        Since      = $notificationSince
-        FilterText = $notificationFilter
+        ServerUrl            = $configuration.ServerUrl
+        AppToken             = $configuration.AppToken
+        Since                = $notificationSince
+        FilterText           = $notificationFilter
+        SkipCertificateCheck = $configuration.SkipCertificateCheck
     }
     $deploymentErrors = @(Sampler.PowerShellUniversalTasks\Get-UniversalDeploymentError @errorParameters)
 

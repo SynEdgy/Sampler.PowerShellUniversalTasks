@@ -221,6 +221,7 @@ variables:
 | `UniversalRepositoryZipName` | Offline repository zip file name. |
 | `UniversalRepositoryAsModule` | Deployment endpoint `asModule` value. |
 | `UniversalUnpinned` | Deployment endpoint `unpinned` value. |
+| `UniversalSkipCertificateCheck` | Bypass TLS certificate validation on requests to the PowerShell Universal server. |
 | `UniversalDeploymentNotificationDelaySeconds` | Delay before querying notifications. |
 | `UniversalDeploymentNotificationLookbackSeconds` | Fallback lookback window when no deployment start time is recorded. |
 | `UniversalDeploymentNotificationFilter` | Optional title or description filter for deployment errors. |

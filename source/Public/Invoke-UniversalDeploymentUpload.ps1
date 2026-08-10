@@ -17,6 +17,9 @@ function Invoke-UniversalDeploymentUpload
         .PARAMETER Path
             Path to the package that is uploaded as the request body.
 
+        .PARAMETER SkipCertificateCheck
+            Whether to bypass TLS certificate validation for the request.
+
         .EXAMPLE
             Invoke-UniversalDeploymentUpload -Uri $uri -AppToken $token -Path $packagePath
     #>
@@ -34,7 +37,11 @@ function Invoke-UniversalDeploymentUpload
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $Path
+        $Path,
+
+        [Parameter()]
+        [System.Boolean]
+        $SkipCertificateCheck = $false
     )
 
     if (-not (Test-Path -Path $Path))
@@ -52,5 +59,5 @@ function Invoke-UniversalDeploymentUpload
         ContentType = 'application/octet-stream; charset=utf-8'
     }
 
-    Invoke-RestMethod @requestParameters
+    Invoke-UniversalRestMethod -RestMethodParameters $requestParameters -SkipCertificateCheck $SkipCertificateCheck
 }

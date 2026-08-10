@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added WikiSource documentation and DscResource.DocGenerator build and publish workflows.
 - Added post-deployment notification validation that fails the build when PowerShell Universal reports a deployment error.
 - Added module-scoped compound tasks for pulling a packaged module from a PSU resource repository or packaging and pushing a complete offline repository, including post-deployment validation.
+- Added `UniversalSkipCertificateCheck` build task and yaml configuration setting to bypass TLS certificate validation when calling the PowerShell Universal server, useful for self-signed certificates.
 
 ### Changed
 

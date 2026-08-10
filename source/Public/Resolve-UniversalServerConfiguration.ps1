@@ -35,6 +35,12 @@ function Resolve-UniversalServerConfiguration
         .PARAMETER UnpinnedWasBound
             Indicates that Unpinned was supplied explicitly.
 
+        .PARAMETER SkipCertificateCheck
+            Whether to bypass TLS certificate validation for requests to the server.
+
+        .PARAMETER SkipCertificateCheckWasBound
+            Indicates that SkipCertificateCheck was supplied explicitly.
+
         .PARAMETER RequireRepository
             Requires and resolves resource repository settings.
 
@@ -80,6 +86,14 @@ function Resolve-UniversalServerConfiguration
         [Parameter()]
         [System.Boolean]
         $UnpinnedWasBound = $false,
+
+        [Parameter()]
+        [System.Boolean]
+        $SkipCertificateCheck = $false,
+
+        [Parameter()]
+        [System.Boolean]
+        $SkipCertificateCheckWasBound = $false,
 
         [Parameter()]
         [System.Management.Automation.SwitchParameter]
@@ -148,6 +162,11 @@ function Resolve-UniversalServerConfiguration
         $Unpinned = [System.Convert]::ToBoolean($server.UniversalUnpinned)
     }
 
+    if (-not $SkipCertificateCheckWasBound -and $null -ne $server.UniversalSkipCertificateCheck)
+    {
+        $SkipCertificateCheck = [System.Convert]::ToBoolean($server.UniversalSkipCertificateCheck)
+    }
+
     [PSCustomObject]@{
         ServerUrl            = $ServerUrl.TrimEnd('/')
         AppToken             = $AppToken
@@ -155,5 +174,6 @@ function Resolve-UniversalServerConfiguration
         RepositoryUrl        = $RepositoryUrl
         RepositoryAutoRemove = $RepositoryAutoRemove
         Unpinned             = $Unpinned
+        SkipCertificateCheck = $SkipCertificateCheck
     }
 }

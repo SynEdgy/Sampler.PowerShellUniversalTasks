@@ -53,4 +53,23 @@ Describe 'Install-UniversalModuleFromRepository' {
         Should -Invoke -CommandName Invoke-RestMethod -Exactly -Times 1 -Scope It -ParameterFilter { $Method -eq 'Put' }
         Should -Invoke -CommandName Invoke-RestMethod -Exactly -Times 1 -Scope It -ParameterFilter { $Method -eq 'Delete' }
     }
+
+    It 'Should pass -SkipCertificateCheck to Invoke-RestMethod when requested' -Skip:($PSVersionTable.PSVersion.Major -lt 6) {
+        $installParameters = @{
+            ServerUrl             = 'https://psu.example.test'
+            AppToken              = 'token'
+            ModuleName            = 'MyModule'
+            ModuleVersion         = '1.2.3'
+            RepositoryName        = 'internal'
+            RepositoryUrl         = 'https://packages.example.test'
+            RepositoryAutoRemove  = $true
+            SkipCertificateCheck  = $true
+        }
+
+        Sampler.PowerShellUniversalTasks\Install-UniversalModuleFromRepository @installParameters
+
+        Should -Invoke -CommandName Invoke-RestMethod -Scope It -ParameterFilter {
+            $SkipCertificateCheck -eq $true
+        }
+    }
 }
