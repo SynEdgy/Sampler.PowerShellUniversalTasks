@@ -99,8 +99,8 @@ BuildWorkflow:
     - package_universal_automation_repository
 ```
 
-The package includes a top-level `repository.psd1` and versioned module folders
-under `Modules`.
+The package includes a top-level `<ModuleName>.psd1` repository manifest and
+versioned module folders under `Modules`.
 
 ## publish_universal_automation_repository_to_server
 

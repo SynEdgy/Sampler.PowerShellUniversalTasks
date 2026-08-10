@@ -73,7 +73,7 @@ for `UniversalPSResourceRepositoryName`.
 
 ```text
 PsuRepository/
-|-- repository.psd1
+|-- MyModule.psd1
 `-- Modules/
     |-- MyModule/
     |   `-- 1.0.0/
@@ -86,8 +86,10 @@ dependencies. Dependencies are processed through an iterative queue, matching
 Sampler's packaging approach and avoiding nested recursive calls. The first
 discovery order is retained; when the same module is required again, its
 selection changes only if the newly resolved version is higher.
-`repository.psd1` identifies the project module that PowerShell Universal
-should load from the `Modules` directory.
+`<ModuleName>.psd1` identifies the project module that PowerShell Universal
+should load from the `Modules` directory. It is named after the project
+module rather than a fixed `repository.psd1` name so that PowerShell Universal
+displays the correct module name and prerelease tag during deployment.
 
 Keep `UniversalRepositoryAsModule` set to `false` for this full repository
 layout.
