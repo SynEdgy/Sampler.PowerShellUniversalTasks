@@ -77,11 +77,12 @@ function Install-UniversalModuleFromRepository
         Accept        = 'application/json'
     }
     $repositoryEndpoint = '{0}/api/v1/resourceRepository' -f $ServerUrl
-    $repositories = @(Invoke-UniversalRestMethod -RestMethodParameters @{
-            Uri     = $repositoryEndpoint
-            Headers = $headers
-            Method  = 'Get'
-        } -SkipCertificateCheck $SkipCertificateCheck)
+    $listRepositoriesParameters = @{
+        Uri     = $repositoryEndpoint
+        Headers = $headers
+        Method  = 'Get'
+    }
+    $repositories = @(Invoke-UniversalRestMethod -RestMethodParameters $listRepositoriesParameters -SkipCertificateCheck $SkipCertificateCheck)
     $existingRepository = $repositories |
         Where-Object -FilterScript { $_.name -eq $RepositoryName } |
         Select-Object -First 1
@@ -97,11 +98,12 @@ function Install-UniversalModuleFromRepository
         if ((-not $sameUrl -or -not [System.Boolean] $existingRepository.trusted) -and $RepositoryAutoRemove)
         {
             $deleteUri = '{0}/{1}' -f $repositoryEndpoint, [System.Uri]::EscapeDataString($RepositoryName)
-            $null = Invoke-UniversalRestMethod -RestMethodParameters @{
+            $deleteRepositoryParameters = @{
                 Uri     = $deleteUri
                 Headers = $headers
                 Method  = 'Delete'
-            } -SkipCertificateCheck $SkipCertificateCheck
+            }
+            $null = Invoke-UniversalRestMethod -RestMethodParameters $deleteRepositoryParameters -SkipCertificateCheck $SkipCertificateCheck
             $existingRepository = $null
         }
     }
@@ -115,13 +117,14 @@ function Install-UniversalModuleFromRepository
             id      = 0
         } | ConvertTo-Json -Depth 5
 
-        $null = Invoke-UniversalRestMethod -RestMethodParameters @{
+        $createRepositoryParameters = @{
             Uri         = $repositoryEndpoint
             Headers     = $headers
             Method      = 'Post'
             Body        = $body
             ContentType = 'application/json; charset=utf-8'
-        } -SkipCertificateCheck $SkipCertificateCheck
+        }
+        $null = Invoke-UniversalRestMethod -RestMethodParameters $createRepositoryParameters -SkipCertificateCheck $SkipCertificateCheck
     }
 
     try
@@ -132,12 +135,13 @@ function Install-UniversalModuleFromRepository
             $ModuleVersion
             [System.Uri]::EscapeDataString($RepositoryName)
         )
-        $null = Invoke-UniversalRestMethod -RestMethodParameters @{
+        $deployModuleParameters = @{
             Uri         = $deployUri
             Headers     = $headers
             Method      = 'Put'
             ContentType = 'application/octet-stream; charset=utf-8'
-        } -SkipCertificateCheck $SkipCertificateCheck
+        }
+        $null = Invoke-UniversalRestMethod -RestMethodParameters $deployModuleParameters -SkipCertificateCheck $SkipCertificateCheck
     }
     finally
     {
@@ -146,11 +150,12 @@ function Install-UniversalModuleFromRepository
             $deleteUri = '{0}/{1}' -f $repositoryEndpoint, [System.Uri]::EscapeDataString($RepositoryName)
             try
             {
-                $null = Invoke-UniversalRestMethod -RestMethodParameters @{
+                $deleteRepositoryParameters = @{
                     Uri     = $deleteUri
                     Headers = $headers
                     Method  = 'Delete'
-                } -SkipCertificateCheck $SkipCertificateCheck
+                }
+                $null = Invoke-UniversalRestMethod -RestMethodParameters $deleteRepositoryParameters -SkipCertificateCheck $SkipCertificateCheck
             }
             catch
             {
