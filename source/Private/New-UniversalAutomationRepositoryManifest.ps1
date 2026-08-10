@@ -65,7 +65,15 @@ function New-UniversalAutomationRepositoryManifest
 
     if (-not [System.String]::IsNullOrWhiteSpace($prereleasePart))
     {
-        $manifestParameters['Prerelease'] = $prereleasePart
+        # Use PrivateData.PSData.Prerelease instead of the -Prerelease parameter because
+        # New-ModuleManifest only gained -Prerelease in PowerShell 6.0. PrivateData works
+        # identically on Windows PowerShell 5.1 and PowerShell 7, and is the same location
+        # PowerShellGet/PSResourceGet store the prerelease tag in the resulting manifest.
+        $manifestParameters['PrivateData'] = @{
+            PSData = @{
+                Prerelease = $prereleasePart
+            }
+        }
     }
 
     if ($PSCmdlet.ShouldProcess($Path, 'Create PowerShell Universal repository manifest'))

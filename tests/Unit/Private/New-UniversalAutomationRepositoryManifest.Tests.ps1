@@ -37,7 +37,7 @@ Describe 'New-UniversalAutomationRepositoryManifest' {
         } -Parameters @{ ManifestPath = (Join-Path -Path $TestDrive -ChildPath 'MyModule.psd1') }
 
         Should -Invoke -CommandName New-ModuleManifest -Exactly -Times 1 -Scope It -ParameterFilter {
-            $RootModule -eq 'MyModule' -and $ModuleVersion -eq '1.2.3' -and $Prerelease -eq 'preview1'
+            $RootModule -eq 'MyModule' -and $ModuleVersion -eq '1.2.3' -and $PrivateData.PSData.Prerelease -eq 'preview1'
         }
     }
 
@@ -49,7 +49,7 @@ Describe 'New-UniversalAutomationRepositoryManifest' {
         } -Parameters @{ ManifestPath = (Join-Path -Path $TestDrive -ChildPath 'MyModule.psd1') }
 
         Should -Invoke -CommandName New-ModuleManifest -Exactly -Times 1 -Scope It -ParameterFilter {
-            $RootModule -eq 'MyModule' -and $ModuleVersion -eq '1.2.3' -and -not $Prerelease
+            $RootModule -eq 'MyModule' -and $ModuleVersion -eq '1.2.3' -and -not $PrivateData
         }
     }
 }
