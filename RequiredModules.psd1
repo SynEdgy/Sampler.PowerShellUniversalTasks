@@ -16,6 +16,7 @@
     PSScriptAnalyzer            = 'latest'
     Pester                      = 'latest'
     ModuleBuilder               = 'latest'
+    Metadata                    = 'latest'
     ChangelogManagement         = 'latest'
     Sampler                     = 'latest'
     'Sampler.GitHubTasks'       = 'latest'

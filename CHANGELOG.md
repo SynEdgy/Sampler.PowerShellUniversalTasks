@@ -29,7 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- For any bug fix.
+- Fixed offline repository descriptors serializing `PrivateData.PSData` as the
+  string `System.Collections.Hashtable` when packaging a prerelease module.
 
 ### Security
 

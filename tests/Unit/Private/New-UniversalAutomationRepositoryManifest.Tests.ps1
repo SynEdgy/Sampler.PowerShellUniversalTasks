@@ -25,31 +25,36 @@ AfterAll {
 }
 
 Describe 'New-UniversalAutomationRepositoryManifest' {
-    BeforeAll {
-        Mock -CommandName New-ModuleManifest
-    }
-
     It 'Should create the repository descriptor for the module' {
+        $manifestPath = Join-Path -Path $TestDrive -ChildPath 'MyModule.psd1'
+
         InModuleScope -ScriptBlock {
             $module = New-Module -Name 'MyModule' -ScriptBlock { }
 
             New-UniversalAutomationRepositoryManifest -Path $ManifestPath -Module $module -ModuleVersion '1.2.3-preview1' -Confirm:$false
-        } -Parameters @{ ManifestPath = (Join-Path -Path $TestDrive -ChildPath 'MyModule.psd1') }
+        } -Parameters @{ ManifestPath = $manifestPath }
 
-        Should -Invoke -CommandName New-ModuleManifest -Exactly -Times 1 -Scope It -ParameterFilter {
-            $RootModule -eq 'MyModule' -and $ModuleVersion -eq '1.2.3' -and $PrivateData.PSData.Prerelease -eq 'preview1'
-        }
+        $manifest = Import-PowerShellDataFile -Path $manifestPath
+        $manifest.RootModule | Should -Be 'MyModule'
+        $manifest.ModuleVersion.ToString() | Should -Be '1.2.3'
+        $manifest.PrivateData | Should -BeOfType [System.Collections.Hashtable]
+        $manifest.PrivateData.PSData | Should -BeOfType [System.Collections.Hashtable]
+        $manifest.PrivateData.PSData.Prerelease | Should -Be 'preview1'
+        Get-Content -Path $manifestPath -Raw | Should -Not -Match "PSData\s*=\s*'System.Collections.Hashtable'"
     }
 
     It 'Should create the repository descriptor without a prerelease tag when the version has none' {
+        $manifestPath = Join-Path -Path $TestDrive -ChildPath 'MyModule.psd1'
+
         InModuleScope -ScriptBlock {
             $module = New-Module -Name 'MyModule' -ScriptBlock { }
 
             New-UniversalAutomationRepositoryManifest -Path $ManifestPath -Module $module -ModuleVersion '1.2.3' -Confirm:$false
-        } -Parameters @{ ManifestPath = (Join-Path -Path $TestDrive -ChildPath 'MyModule.psd1') }
+        } -Parameters @{ ManifestPath = $manifestPath }
 
-        Should -Invoke -CommandName New-ModuleManifest -Exactly -Times 1 -Scope It -ParameterFilter {
-            $RootModule -eq 'MyModule' -and $ModuleVersion -eq '1.2.3' -and -not $PrivateData
-        }
+        $manifest = Import-PowerShellDataFile -Path $manifestPath
+        $manifest.RootModule | Should -Be 'MyModule'
+        $manifest.ModuleVersion.ToString() | Should -Be '1.2.3'
+        $manifest.ContainsKey('PrivateData') | Should -BeFalse
     }
 }
